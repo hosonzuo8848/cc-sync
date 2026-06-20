@@ -100,7 +100,11 @@ def list_groups():
 def handle(gid, keys):
     keys.sort(key=lambda k: int(re.search(r"(\d+)\.\w+$", k.rsplit("/", 1)[-1]).group(1)))  # numeric page order for OCR, never string-sort
     gid_tail = gid.split("/")[-1]
-    disp = NAMES.get(gid_tail, gid_tail)              # = D1 book_title (front-end title); CJK from private storage
+    _p = re.sub(r"^\D+", "", gid_tail).split("-")               # normalize: strip prefix + leading zeros in volume no.
+    _key = "-".join(_p[:-1] + [str(int(_p[-1]))]) if _p and _p[-1].isdigit() else "-".join(_p)
+    if _key not in NAMES:
+        return ("skip-noname", "skip-noname")                  # no D1 title -> skip, never write book_id-named files (OCR cleanliness)
+    disp = NAMES[_key]                                          # = D1 book_title; CJK from private storage
     import zipfile
     zp = os.path.join(TMP, gid_tail + ".zip")
     with zipfile.ZipFile(zp, "w", zipfile.ZIP_STORED) as z:
