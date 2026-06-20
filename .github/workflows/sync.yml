@@ -4,17 +4,28 @@ on:
   workflow_dispatch:
     inputs:
       total:
-        description: shard count
-        default: "10"
+        description: shard count (concurrency)
+        default: "200"
 
 jobs:
+  prep:
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.g.outputs.shards }}
+    steps:
+      - id: g
+        run: python -c "import json,os;print('shards='+json.dumps(list(range(int(os.environ['T'])))))" >> "$GITHUB_OUTPUT"
+        env:
+          T: ${{ github.event.inputs.total }}
+
   run:
+    needs: prep
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 10
+      max-parallel: 256
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        shard: ${{ fromJSON(needs.prep.outputs.shards) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

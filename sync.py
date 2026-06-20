@@ -106,7 +106,7 @@ def handle(gid, keys):
     with zipfile.ZipFile(zp, "w", zipfile.ZIP_STORED) as z:
         for k in keys:
             z.writestr(k.split("/")[-1], s3.get_object(Bucket=SRC, Key=k)["Body"].read())
-    st_a = put_file(zp, DIR_A, gid_tail + ".zip")
+    st_a = put_file(zp, DIR_A, disp + ".zip")         # zip name = D1 book_title too (was book_id)
     os.remove(zp)
     pdfp = os.path.join(TMP, gid_tail + ".pdf")
     imgs = []
