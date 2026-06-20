@@ -86,7 +86,7 @@ def list_groups():
         r = s3.list_objects_v2(**kw)
         for o in r.get("Contents", []):
             k = o["Key"]
-            if not k.endswith(".webp"):
+            if not re.search(r"/page_\d+\.webp$", k):     # only body pages; drop thumb.webp & non-page files (OCR needs clean pages)
                 continue
             gid = "/".join(k.split("/")[:2])
             groups[gid].append(k)
@@ -98,7 +98,7 @@ def list_groups():
 
 
 def handle(gid, keys):
-    keys.sort()
+    keys.sort(key=lambda k: int(re.search(r"(\d+)\.\w+$", k.rsplit("/", 1)[-1]).group(1)))  # numeric page order for OCR, never string-sort
     gid_tail = gid.split("/")[-1]
     disp = NAMES.get(gid_tail, gid_tail)              # = D1 book_title (front-end title); CJK from private storage
     import zipfile
