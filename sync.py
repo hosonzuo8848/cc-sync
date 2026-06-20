@@ -100,10 +100,7 @@ def list_groups():
 def handle(gid, keys):
     keys.sort()
     gid_tail = gid.split("/")[-1]
-    _m = re.search(r"(\d{3})-?(\d{4})", gid_tail)     # req number from book id; source has no CJK
-    _req = f"{_m.group(1)}-{_m.group(2)}" if _m else gid_tail
-    _book = NAMES.get(_req, "")
-    disp = f"{_req}_{_book}_{gid_tail.split('-')[-1]}" if _book else gid_tail
+    disp = NAMES.get(gid_tail, gid_tail)              # = D1 book_title (front-end title); CJK from private storage
     import zipfile
     zp = os.path.join(TMP, gid_tail + ".zip")
     with zipfile.ZipFile(zp, "w", zipfile.ZIP_STORED) as z:
